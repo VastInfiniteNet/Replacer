@@ -63,16 +63,10 @@ function itemToString(item) {
  */
 function findReplacementSlot(toReplace) {
     for (let k of [...INV_SLOTS.MAIN_SLOTS, ...INV_SLOTS.HOTBAR_SLOTS]) {
-        if (itemId(inv.getSlot(k)) === itemId(toReplace) && validEnchant(inv.getSlot(k), toReplace)) {
-            Chat.log(`Found replacement in slot ${k}: ${itemName(inv.getSlot(k))} === ${itemName(toReplace)}`)
+        if (itemId(inv.getSlot(k)) === itemId(toReplace) && validEnchant(inv.getSlot(k), toReplace))
             return k
-        }
     }
     return null
-}
-
-function isSimilarItemInInventory(itemStackHelper) {
-
 }
 
 /**
@@ -112,51 +106,35 @@ function isBroke(currentItem, oldItem, isOffHand) {
     const oldItemName = itemName(oldItem)
     
     var currentSlot = INV_SLOTS.HOTBAR_SLOTS[0] + inv.getSelectedHotbarSlotIndex()
-    if (isOffHand) {
-        Chat.log("Item change in offhand")
-        
+    if (isOffHand)
         currentSlot = INV_SLOTS.OFFHAND_SLOT
-    } 
+
     const currentItemName = itemName(currentItem)
     
     GlobalVars.putDouble("oldSlotIndex", currentSlot)
 
 
-    Chat.log(`Old     item: ${itemToString(oldItem)}`)
-    Chat.log(`Current item: ${itemToString(currentItem)}`)
-
     // check if 1 left
-    if (currentItem.getCount() > 0) {
-        Chat.log(`Not empty! ${currentItem.getCount()} left!`)
+    if (currentItem.getCount() > 0)
         return false
-    }
 
     // check if inventory open
-    if (Hud.getOpenScreenName() !== null) {
-        Chat.log(`Inventory ${Hud.getOpenScreenName()} is open!`)
+    if (Hud.getOpenScreenName() !== null)
         return false
-    }
 
     // check still in same slot
-    if (currentSlot !== oldSlot && currentSlot != INV_SLOTS.OFFHAND_SLOT) {
-        Chat.log(`Different slots!: old: ${oldSlot}, current: ${currentSlot}`)
+    if (currentSlot !== oldSlot && currentSlot != INV_SLOTS.OFFHAND_SLOT)
         return false    
-    }
 
     // check that old item ran out
-    if (oldItemName === "Air" || currentItemName === oldItemName) {
-        Chat.log("Didn't run out!")
+    if (oldItemName === "Air" || currentItemName === oldItemName)
         return false
-    }
 
     // check if non-blacklisted item
-    if ( BLACK_LIST.some(e => itemId(oldItem).includes(e)) ) {
-        Chat.log(`Unreplacable item (${itemId(oldItem)})!`)
+    if (BLACK_LIST.some(e => itemId(oldItem).includes(e)))
         return false
-    }
 
     // item broken probably or just dropped lol
-    Chat.log("Current item ran out!")
     return true
 }
 
@@ -168,21 +146,16 @@ function isBroke(currentItem, oldItem, isOffHand) {
  * @return {Boolean} whether or not a replacement happened
  */
 function replace(oldI, newI, offHand) {
-    if (!isBroke(newI, oldI, offHand)) { // no replacing needed!
+    if (!isBroke(newI, oldI, offHand)) // no replacing needed!
         return false
-    }
 
     const replacementSlot = findReplacementSlot(oldI)
-    if (!replacementSlot) { // no replacement found
-        Chat.log("No replacement found!")
+    if (!replacementSlot) // no replacement found
         return false
-    }
 
     var currentSlot = INV_SLOTS.HOTBAR_SLOTS[0] + inv.getSelectedHotbarSlotIndex()
-    if (offHand) {
-        Chat.log("Change happened in offhand.")
+    if (offHand)
         currentSlot = INV_SLOTS.OFFHAND_SLOT
-    }
 
     let waitAmount = 3;
     Client.waitTick(waitAmount)
