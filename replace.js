@@ -62,7 +62,7 @@ function itemToString(item) {
  * @returns {Number} slot number of replacement, null if no replacement.
  */
 function findReplacementSlot(toReplace) {
-    for (let k of [...INV_SLOTS.MAIN_SLOTS, ...INV_SLOTS.HOTBAR_SLOTS]) {
+    for (let k of [...INV_SLOTS.HOTBAR_SLOTS, ...INV_SLOTS.MAIN_SLOTS]) {
         if (itemId(inv.getSlot(k)) === itemId(toReplace) && validEnchant(inv.getSlot(k), toReplace))
             return k
     }
