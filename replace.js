@@ -8,7 +8,7 @@
 
 const inv = Player.openInventory()
 const BLACK_LIST = ["sword", "potion"]
-
+const REPLACE_DEBUG = false
 const ENCHANT_MODES = Object.freeze({
     /**
      * Don't consider enchants when looking for replacement.
@@ -110,31 +110,46 @@ function isBroke(currentItem, oldItem, isOffHand) {
         currentSlot = INV_SLOTS.OFFHAND_SLOT
 
     const currentItemName = itemName(currentItem)
+    Client.waitTick(1)
     
     GlobalVars.putDouble("oldSlotIndex", currentSlot)
 
+    Chat.log(`${oldSlot} ${currentSlot}, ${oldItemName} ${currentItemName}`)
+    
+    // TODO: BETTER SWAP HANDLING
 
-    // check if 1 left
-    if (currentItem.getCount() > 0)
-        return false
-
-    // check if inventory open
-    if (Hud.getOpenScreenName() !== null)
-        return false
-
-    // check still in same slot
-    if (currentSlot !== oldSlot && currentSlot != INV_SLOTS.OFFHAND_SLOT)
+    // player changed slot
+    if (currentSlot != oldSlot) {
+        if (REPLACE_DEBUG) Chat.log("Changed selected slot!")
         return false    
+    }
 
-    // check that old item ran out
-    if (oldItemName === "Air" || currentItemName === oldItemName)
+    // still item left in slot
+    if (currentItem.getCount() > 0) {
+        if (REPLACE_DEBUG) Chat.log("Still got some!")
         return false
+    }
 
-    // check if non-blacklisted item
-    if (BLACK_LIST.some(e => itemId(oldItem).includes(e)))
+    // slot was empty, you picked up item
+    if (oldItemName === "Air") {
+        if (REPLACE_DEBUG) Chat.log("No item in slot before!")
         return false
+    }
 
-    // item broken probably or just dropped lol
+    // blacklisted item!
+    if (BLACK_LIST.some(e => itemId(oldItem).includes(e))) {
+        if (REPLACE_DEBUG) Chat.log("Blacklisted item!")
+        return false
+    }
+
+    // inventory open! close it
+    if (Hud.getOpenScreenName() !== null) {
+        if (REPLACE_DEBUG) Chat.log("Inventory open!")
+        return false
+    }
+
+    // Item BROKE/RAN OUT
+    Chat.log(`Item broke/ran out! (${oldItemName}->${currentItemName} @ slot ${currentSlot})`)
     return true
 }
 
@@ -157,12 +172,10 @@ function replace(oldI, newI, offHand) {
     if (offHand)
         currentSlot = INV_SLOTS.OFFHAND_SLOT
 
-    let waitAmount = 3;
-    Client.waitTick(waitAmount)
+    Chat.log("Replacing!")
     inv.swap(currentSlot, replacementSlot)
+    Client.waitTick(2)
     World.playSound("entity.player.levelup", 0.3, 1)
-    Client.waitTick(waitAmount)
     return true
 }
-
 replace(event.oldItem, event.item, event.offHand)
